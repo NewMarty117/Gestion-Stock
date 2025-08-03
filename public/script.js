@@ -129,3 +129,16 @@ productModal.addEventListener('click', function(e) {
 
 // Initial Load
 // The server will send the initial stock list
+
+// Register Service Worker for PWA features
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('Service Worker registered: ', registration);
+            })
+            .catch(error => {
+                console.log('Service Worker registration failed: ', error);
+            });
+    });
+}
