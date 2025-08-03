@@ -1,0 +1,42 @@
+[
+  {
+    "id": "viennoise_nature",
+    "name": "Viennoise Nature",
+    "stock": 40
+  },
+  {
+    "id": "viennoise_chocolat",
+    "name": "Viennoise Chocolat",
+    "stock": 0
+  },
+  {
+    "id": "viennoise_mois",
+    "name": "Viennoise du mois",
+    "stock": 0
+  },
+  {
+    "id": "viennoise_pavot",
+    "name": "Viennoise Pavot",
+    "stock": 0
+  },
+  {
+    "id": "pain_de_mie",
+    "name": "Pain de mie",
+    "stock": 0
+  },
+  {
+    "id": "burgers",
+    "name": "Burgers",
+    "stock": 0
+  },
+  {
+    "id": "boule_brioche",
+    "name": "Boule Brioche",
+    "stock": 0
+  },
+  {
+    "id": "brioche_tressee",
+    "name": "Brioche Tressée",
+    "stock": 0
+  }
+]
