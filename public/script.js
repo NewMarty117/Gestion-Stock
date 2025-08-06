@@ -14,9 +14,8 @@ let currentProductId = null;
 
 // --- Socket.IO Listeners ---
 socket.on('stock update', (products) => {
-    // Firebase can return an object or an array, so we handle both cases.
-    const productArray = Array.isArray(products) ? products : Object.values(products);
-    allProducts = productArray.filter(p => p).map(p => ({ ...p, image: getProductImage(p.id) }));
+    // The server now guarantees a consistent array format.
+    allProducts = products.filter(p => p).map(p => ({ ...p, image: getProductImage(p.id) }));
     filterProducts();
     showSyncIndicator();
 });
