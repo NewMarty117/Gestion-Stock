@@ -37,7 +37,7 @@ const io = new Server(server);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(__dirname, 'public')));
 
-"""// --- Real-time Data Sync ---
+// --- Real-time Data Sync ---
 let currentStock = [];
 
 // Helper to process data from Firebase
@@ -85,7 +85,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('user disconnected');
   });
-});""
+});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
