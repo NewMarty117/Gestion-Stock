@@ -6,14 +6,24 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // --- Firebase Setup ---
-// Important: The service account key is stored in Render's environment variables.
-// We parse it from a string to a JSON object.
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+try {
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable not set.');
+  }
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://gestion-stock-app-9ab2d-default-rtdb.europe-west1.firebasedatabase.app/"
-});
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://gestion-stock-app-9ab2d-default-rtdb.europe-west1.firebasedatabase.app/"
+  });
+
+  console.log('Firebase Admin SDK initialized successfully.');
+
+} catch (error) {
+  console.error('Firebase Admin SDK initialization failed:', error);
+  process.exit(1); // Exit the process with an error code
+}
+
 
 // Get a reference to the database service
 const db = admin.database();
