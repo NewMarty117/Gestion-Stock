@@ -113,7 +113,9 @@ function getProductImage(productId) {
         pain_de_mie: "🍞",
         burgers: "🍔",
         boule_brioche: "🥯",
-        brioche_tressee: "🥨"
+        brioche_tressee: "🥨",
+        pain_chocolat: "🍫",
+        croissant: "🥐"
     };
     return images[productId] || "❓";
 }
