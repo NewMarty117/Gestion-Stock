@@ -5,8 +5,6 @@ const productsContainer = document.getElementById('productsContainer');
 const searchInput = document.getElementById('searchInput');
 const productModal = document.getElementById('productModal');
 const modalProductName = document.getElementById('modalProductName');
-const currentQuantitySpan = document.getElementById('currentQuantity');
-const manualQuantityInput = document.getElementById('manualQuantity');
 const syncIndicator = document.getElementById('syncIndicator');
 
 // App state
@@ -16,7 +14,9 @@ let currentProductId = null;
 
 // --- Socket.IO Listeners ---
 socket.on('stock update', (products) => {
-    allProducts = products.map(p => ({ ...p, image: getProductImage(p.id) }));
+    // Firebase can return an object or an array, so we handle both cases.
+    const productArray = Array.isArray(products) ? products : Object.values(products);
+    allProducts = productArray.filter(p => p).map(p => ({ ...p, image: getProductImage(p.id) }));
     filterProducts();
     showSyncIndicator();
 });
@@ -24,6 +24,11 @@ socket.on('stock update', (products) => {
 // --- Rendering ---
 function renderProducts() {
     productsContainer.innerHTML = '';
+    if (filteredProducts.length === 0) {
+        // You can add a message here if you want, e.g.:
+        // productsContainer.innerHTML = '<p class="text-center text-gray-500 col-span-full">Aucun produit trouvé.</p>';
+        return;
+    }
     filteredProducts.forEach(product => {
         const status = product.stock === 0 ? 'Rupture' : 
                       product.stock <= 5 ? 'Stock faible' : 'Disponible';
@@ -63,9 +68,10 @@ function openModal(productId) {
     currentProductId = productId;
     const product = allProducts.find(p => p.id === productId);
     
-    document.getElementById('modalProductName').textContent = product.name;
-    
-    productModal.classList.remove('hidden');
+    if (product) {
+        document.getElementById('modalProductName').textContent = product.name;
+        productModal.classList.remove('hidden');
+    }
 }
 
 function closeModal() {
@@ -127,8 +133,7 @@ productModal.addEventListener('click', function(e) {
     }
 });
 
-// Initial Load
-// The server will send the initial stock list
+// Initial Load is handled by the 'stock update' event from the server.
 
 // Register Service Worker for PWA features
 if ('serviceWorker' in navigator) {
