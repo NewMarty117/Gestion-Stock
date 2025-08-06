@@ -16,16 +16,13 @@ const io = new Server(server);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const file = join(__dirname, 'stock.json')
 const adapter = new JSONFile(file)
-const db = new Low(adapter)
+const db = new Low(adapter, [])
 
 // Serve static files from 'public' directory
 app.use(express.static(join(__dirname, 'public')));
 
-// Initialize the database
+// Read data from JSON file, this will set db.data content
 await db.read()
-db.data = db.data || [] // Ensure db.data is an array
-await db.write()
-
 
 io.on('connection', async (socket) => {
   console.log('a user connected');
@@ -35,7 +32,6 @@ io.on('connection', async (socket) => {
 
   // Handle stock updates from clients
   socket.on('update stock', async ({ id, change }) => {
-    await db.read();
     const product = db.data.find(p => p.id === id);
     if (product) {
       product.stock += change;
