@@ -14,8 +14,10 @@ let currentProductId = null;
 
 // --- Socket.IO Listeners ---
 socket.on('stock update', (products) => {
+    console.log('Products received by client:', JSON.stringify(products, null, 2));
     // The server now guarantees a consistent array format.
     allProducts = products.filter(p => p).map(p => ({ ...p, image: getProductImage(p.id) }));
+    console.log('Processed allProducts (client):', JSON.stringify(allProducts, null, 2));
     filterProducts();
     showSyncIndicator();
 });

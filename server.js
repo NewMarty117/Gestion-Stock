@@ -57,7 +57,9 @@ const processFirebaseData = (data) => {
 // Listen for changes in the database and broadcast them
 stockRef.on('value', (snapshot) => {
   const data = snapshot.val();
+  console.log('Firebase raw data:', JSON.stringify(data, null, 2));
   currentStock = processFirebaseData(data);
+  console.log('Processed currentStock (server):', JSON.stringify(currentStock, null, 2));
   io.emit('stock update', currentStock);
   console.log('Stock data updated from Firebase and broadcasted.');
 }, (errorObject) => {
