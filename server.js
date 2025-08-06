@@ -1,43 +1,62 @@
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
+import admin from 'firebase-admin';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-import { Low } from 'lowdb'
-import { JSONFile } from 'lowdb/node'
-import express from 'express'
-import http from 'http'
-import { Server } from 'socket.io'
+// --- Firebase Setup ---
+// Important: The service account key is stored in Render's environment variables.
+// We parse it from a string to a JSON object.
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-// Set up Express and Socket.IO
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://gestion-stock-app-9ab2d-default-rtdb.europe-west1.firebasedatabase.app/"
+});
+
+// Get a reference to the database service
+const db = admin.database();
+const stockRef = db.ref('stock');
+
+// --- Express & Socket.IO Setup ---
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Configure lowdb
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const file = join(__dirname, 'stock.json')
-const adapter = new JSONFile(file)
-const db = new Low(adapter, [])
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve static files from 'public' directory
-app.use(express.static(join(__dirname, 'public')));
+// --- Real-time Data Sync ---
+let currentStock = [];
 
-// Read data from JSON file, this will set db.data content
-await db.read()
+// Listen for changes in the database and broadcast them
+stockRef.on('value', (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    currentStock = Array.isArray(data) ? data : Object.values(data);
+    io.emit('stock update', currentStock);
+    console.log('Stock data updated from Firebase and broadcasted.');
+  }
+}, (errorObject) => {
+  console.log('The read failed: ' + errorObject.name);
+});
 
-io.on('connection', async (socket) => {
+
+io.on('connection', (socket) => {
   console.log('a user connected');
-  
-  // Send current stock to the new client
-  socket.emit('stock update', db.data);
+  // Send the current stock to the newly connected client
+  socket.emit('stock update', currentStock);
 
-  // Handle stock updates from clients
-  socket.on('update stock', async ({ id, change }) => {
-    const product = db.data.find(p => p.id === id);
-    if (product) {
-      product.stock += change;
-      await db.write();
-      // Broadcast the update to all clients
-      io.emit('stock update', db.data);
+  socket.on('update stock', ({ id, change }) => {
+    // Find the index of the product to update
+    const productIndex = currentStock.findIndex(p => p.id === id);
+    if (productIndex !== -1) {
+      const productRef = stockRef.child(productIndex.toString());
+      // Use a transaction to safely update the stock
+      productRef.child('stock').transaction((current_stock) => {
+        return (current_stock || 0) + change;
+      });
     }
   });
 
